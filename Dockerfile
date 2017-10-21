@@ -16,6 +16,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # Constraint Layout / [Solver for ConstraintLayout 1.0.0-alpha8, ConstraintLayout for Android 1.0.0-alpha8]
 RUN mkdir -p $ANDROID_HOME/licenses/
 RUN echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_HOME/licenses/android-sdk-license
+RUN echo "84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_HOME/licenses/android-sdk-preview-license
 
 RUN apt-get -qq update && \
     apt-get install -qqy --no-install-recommends \
@@ -28,14 +29,7 @@ RUN apt-get -qq update && \
       lib32ncurses5 \
       lib32z1 \
       unzip \
-      qtbase5-dev \
-      qtdeclarative5-dev \
       wget \
-      qemu-kvm \
-      build-essential \
-      python2.7 \
-      python2.7-dev \
-      yamdi \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN rm -f /etc/ssl/certs/java/cacerts; \
@@ -44,15 +38,9 @@ RUN rm -f /etc/ssl/certs/java/cacerts; \
 RUN wget -nv https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip && unzip sdk-tools-linux-3859397.zip -d /sdk && \
     rm -v sdk-tools-linux-3859397.zip
 
-RUN wget -nv https://pypi.python.org/packages/1e/8e/40c71faa24e19dab555eeb25d6c07efbc503e98b0344f0b4c3131f59947f/vnc2flv-20100207.tar.gz && tar -zxvf vnc2flv-20100207.tar.gz && rm vnc2flv-20100207.tar.gz && \
-    cd vnc2flv-20100207 && ln -s /usr/bin/python2.7 /usr/bin/python && python setup.py install
-
 RUN mkdir /sdk/tools/keymaps && \
     touch /sdk/tools/keymaps/en-us
 
-#RUN mkdir /helpers
-
-#COPY wait-for-avd-boot.sh /helpers
 
 RUN (while [ 1 ]; do sleep 5; echo y; done) | ${ANDROID_HOME}/tools/bin/sdkmanager "build-tools;26.0.0" "platforms;android-26" "add-ons;addon-google_apis-google-24" "platform-tools" "extras;android;m2repository" "extras;google;google_play_services" "extras;google;m2repository" "system-images;android-26;google_apis_playstore;x86" "system-images;android-26;google_apis;x86"
 

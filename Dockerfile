@@ -1,11 +1,10 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 MAINTAINER heri <kid.brotherhood@gmail.com>
 
-ENV SDK_TOOLS_VERSION "4333796"
-ENV VERSION_COMPILE_VERSION 28
+ENV SDK_TOOLS_VERSION "6858069"
 
 ENV ANDROID_HOME "/sdk"
-ENV PATH "$PATH:${ANDROID_HOME}/tools"
+ENV PATH "$PATH:${ANDROID_HOME}/tools:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools"
 ENV DEBIAN_FRONTEND noninteractive
 
 
@@ -29,22 +28,21 @@ RUN apt-get -qq update && \
 RUN rm -f /etc/ssl/certs/java/cacerts; \
     /var/lib/dpkg/info/ca-certificates-java.postinst configure
 
-RUN curl -s https://dl.google.com/android/repository/sdk-tools-linux-${SDK_TOOLS_VERSION}.zip > /tools.zip && \
-    unzip -qq /tools.zip -d /sdk && \
+RUN curl -s https://dl.google.com/android/repository/commandlinetools-linux${SDK_TOOLS_VERSION}_latest.zip > /tools.zip && \
+    mkdir -p ${ANDROID_HOME}/cmdline-tools && \
+    unzip /tools.zip -d ${ANDROID_HOME}/cmdline-tools && \
+    mv ${ANDROID_HOME}/cmdline-tools/cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest && \
     rm -v /tools.zip
 
-RUN mkdir -p $ANDROID_HOME/licenses/ \
-  && echo "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e" > $ANDROID_HOME/licenses/android-sdk-license \
-  && echo "84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_HOME/licenses/android-sdk-preview-license
+RUN mkdir -p $ANDROID_HOME/licenses/ && \
+    echo "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_HOME/licenses/android-sdk-license && \
+    echo "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910" > $ANDROID_HOME/licenses/android-sdk-preview-license && \
+    yes | sdkmanager --licenses >/dev/null
 
-RUN yes | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-28"
-
-ADD pkg.txt /sdk
 RUN mkdir -p /root/.android \
     && touch /root/.android/repositories.cfg \
-    && ${ANDROID_HOME}/tools/bin/sdkmanager --update
+    && sdkmanager --update
 
-RUN yes | ${ANDROID_HOME}/tools/bin/sdkmanager --licenses
+ADD pkg.txt /sdk
 
-RUN while read -r pkg; do PKGS="${PKGS}${pkg} "; done < /sdk/pkg.txt && \
-    ${ANDROID_HOME}/tools/bin/sdkmanager ${PKGS}
+RUN sdkmanager --package_file=/sdk/pkg.txt
